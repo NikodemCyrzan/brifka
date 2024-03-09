@@ -1,0 +1,20 @@
+{
+	"name": "@brifka/main",
+	"version": "0.0.1",
+	"description": "Version controll system for simple web development",
+	"main": "dist/index.js",
+	"bin": {
+		"brifka": "./bin/cli.js"
+	},
+	"scripts": {
+		"watch": "rollup -c --watch"
+	},
+	"author": "Nikodem Cyrzan",
+	"license": "MIT",
+	"devDependencies": {
+		"@rollup/plugin-terser": "^0.4.4",
+		"@rollup/plugin-typescript": "^11.1.6",
+		"rollup": "^4.12.1"
+	},
+	"keywords": ["brifka", "version controll", "ftp client"]
+}
