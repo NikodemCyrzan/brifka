@@ -1,7 +1,8 @@
 import help from "./help";
+import init from "./init";
 
 const interpret = {
-    help
+    help, init
 };
 
 export { interpret };
