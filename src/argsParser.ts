@@ -17,8 +17,8 @@ class ArgsParser {
     }
 
     public peek(): string | false {
-        if (this.index + 1 >= this.args.length) return false;
-        return this.args[this.index + 1];
+        if (this.index >= this.args.length) return false;
+        return this.args[this.index];
     }
 }
 
