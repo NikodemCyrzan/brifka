@@ -5,14 +5,11 @@ type Flags = "r" | "r+" | "rs+" | "w" | "wx" | "w+" | "wx+" | "a" | "ax" | "a+" 
 
 const openFile = async (path: string, flags: Flags): Promise<fs.FileHandle | false> => {
     path = nodePath.resolve(process.cwd(), path);
-    let fileHandle: fs.FileHandle | false;
     try {
-        fileHandle = await fs.open(path, flags);
+        return await fs.open(path, flags);
     } catch {
-        fileHandle = false;
+        return false;
     }
-
-    return fileHandle;
 }
 
 const writeFile = async (path: string, data: string = "") => {
@@ -29,6 +26,15 @@ const writeFile = async (path: string, data: string = "") => {
     await fs.writeFile(path, data);
 }
 
+const readFile = async (path: string): Promise<string | false> => {
+    path = nodePath.resolve(process.cwd(), path);
+    try {
+        return await fs.readFile(path, { encoding: "utf8" })
+    } catch {
+        return false;
+    }
+}
+
 const createDirectory = async (path: string) => {
     const normalized = nodePath.normalize(path),
         parsed = nodePath.parse(normalized),
@@ -40,4 +46,4 @@ const createDirectory = async (path: string) => {
         } catch { }
 }
 
-export { openFile, writeFile, createDirectory }
+export { openFile, writeFile, readFile, createDirectory }
