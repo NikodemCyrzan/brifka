@@ -5,7 +5,6 @@ type Commit = {
     title: string,
     hash: string
 }
-
 const writeCommits = (commits: Commit[]): string => {
     return commits.map(({ title, hash }) => `${title.length}\u{001e}${title}\u{001e}${hash}`).join(os.EOL);
 }

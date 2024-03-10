@@ -8,7 +8,7 @@ import { readTracked, writeTracked } from "./parsers";
 const untrack = async (argsParser: ArgsParser) => {
     const target = argsParser.next();
 
-    if (!target) {
+    if (!target || target.length <= 0) {
         console.error(chalk.red(`\nUntrack command requires <directory_path> | <file_path> | . argument.\n`));
         return;
     }
