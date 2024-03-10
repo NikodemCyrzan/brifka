@@ -11,7 +11,7 @@ const documentation = {
         + `\n\n\tAdds files to the tracked stage.`
         + `\n\t${y("<directory_path>")} - all files and directories in that directory will be tracked.`
         + `\n\t${y("<file_path>")} - file will be tracked.`
-        + `\n\t${y(".")} - all files besides paths excluded in .brignore will be tracked.`,
+        + `\n\t${y(".")} - all files besides excluded in '.brignore' will be tracked.`,
     untrack: `${b("untrack <directory_path> | <file_path> | .")}`
         + `\n\n\tRemoves files from tracked stage.`
         + `\n\t${y("<directory_path>")} - all files and directories in that directory will be untracked.`
@@ -22,13 +22,14 @@ const documentation = {
         + `\n\t${y("<commit_name>")} - name of new commit.`,
     uncommit: `${b("uncommit")}`
         + `\n\n\tRemoves last commit from the repository.`,
-    commits: `${b("commits empty | <limit>")}`
+    commits: `${b("commits")}`
+        + `\n${b("commits <limit>")}`
         + `\n\n\tDisplays commits.`
         + `\n\t${y("<limit>")} - displays only last x commits.`,
     push: `${b("push")}`
-        + `\n\n\tSends repository to the ftp server.`,
+        + `\n\n\tSends repository to the ftp server specified in 'brifka.config.json'.`,
     pull: `${b("pull")}`
-        + `\n\n\tDownloads repository from ftp server.`
+        + `\n\n\tDownloads repository from ftp server specified in 'brifka.config.json'.`
 }
 
 const help = (argsParser: ArgsParser) => {

@@ -8,7 +8,7 @@ const init = (argsParser: ArgsParser) => {
     const join = (...paths: string[]) => path.join(repo, ...paths);
 
     writeFile(join("mem/commits"));
-    writeFile(join("mem/traced"));
+    writeFile(join("mem/tracked"));
 
     createDirectory(join("rep"))
 
