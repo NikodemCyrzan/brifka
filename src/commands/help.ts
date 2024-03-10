@@ -26,6 +26,9 @@ const documentation = {
         + `\n${b("commits <limit>")}`
         + `\n\n\tDisplays commits.`
         + `\n\t${y("<limit>")} - displays only last x commits.`,
+    change: `${b("change <commit_hash>")}`
+        + `\n\n\tChanges commit that is currently loaded.`
+        + `\n\t${y("<commit_hash>")} - hash of commit which you want to load.`,
     push: `${b("push")}`
         + `\n\n\tSends repository to the ftp server specified in 'brifka.config.json'.`,
     pull: `${b("pull")}`
