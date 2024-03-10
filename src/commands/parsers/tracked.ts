@@ -5,8 +5,7 @@ const writeTracked = (paths: string[]): string => {
 }
 
 const readTracked = (data: string): string[] => {
-    const lines = data.split(os.EOL);
-    return lines;
+    return data.split(os.EOL).filter(l => l.length > 0);
 }
 
 export { writeTracked, readTracked };

@@ -31,62 +31,62 @@ const track = async (argsParser: ArgsParser) => {
         return;
     }
 
+    const trackedPath = nodePath.resolve(process.cwd(), ".brifka/mem/tracked");
+    const path = nodePath.resolve(process.cwd(), target);
+    let status;
     try {
-        const path = nodePath.resolve(process.cwd(), target);
-        const status = await fs.stat(path);
-        const trackedPath = nodePath.resolve(process.cwd(), ".brifka/mem/tracked");
-
-        try {
-            if (status.isDirectory()) {
-                const paths: string[] = await mapDir(path);
-
-                const data = await readFile(trackedPath);
-                if (typeof data !== "string") throw new Error();
-
-                const trackedFiles = readTracked(data);
-                for (const newFile of paths) {
-                    let isRepeated = false;
-                    for (const trackedFile of trackedFiles)
-                        if (trackedFile == newFile) {
-                            isRepeated = true;
-                            break;
-                        }
-
-                    if (!isRepeated) trackedFiles.push(newFile);
-                }
-
-                await writeFile(trackedPath, writeTracked(trackedFiles));
-            }
-            else if (status.isFile()) {
-                const data = await readFile(trackedPath);
-                if (typeof data !== "string") throw new Error();
-
-                const trackedFiles = readTracked(data);
-                const newFile = nodePath.relative(process.cwd(), path)
-
-                let isRepeated = false;
-                for (const trackedFile of trackedFiles)
-                    if (trackedFile == newFile) {
-                        isRepeated = true;
-                        break;
-                    }
-
-                if (!isRepeated) trackedFiles.push(newFile);
-                else {
-                    console.error(chalk.red(`\nFile '${newFile}' is already tracked.\n`));
-                    return;
-                }
-
-                await writeFile(trackedPath, writeTracked(trackedFiles));
-            }
-        } catch {
-            console.error(chalk.red(`\nRepository memory corrupted :/\n`));
-            return;
-        }
+        status = await fs.stat(path);
     } catch {
         console.error(chalk.red(`\nFile or directory '${target}' doesn't exist.\n`));
         return;
     }
+
+    if (status.isDirectory()) {
+        const paths: string[] = await mapDir(path);
+
+        const data = await readFile(trackedPath);
+        if (typeof data !== "string") throw new Error();
+
+        const trackedFiles = readTracked(data);
+        for (const newFile of paths) {
+            let isRepeated = false;
+            for (const trackedFile of trackedFiles)
+                if (trackedFile == newFile) {
+                    isRepeated = true;
+                    break;
+                }
+
+            if (!isRepeated) trackedFiles.push(newFile);
+        }
+
+        await writeFile(trackedPath, writeTracked(trackedFiles));
+    }
+    else if (status.isFile()) {
+        const data = await readFile(trackedPath);
+        if (typeof data !== "string") {
+            console.error(chalk.red(`\nRepository memory corrupted :/\n`));
+            return;
+        }
+
+        const trackedFiles = readTracked(data);
+        const newFile = nodePath.relative(process.cwd(), path)
+
+        let isRepeated = false;
+        for (const trackedFile of trackedFiles)
+            if (trackedFile == newFile) {
+                isRepeated = true;
+                break;
+            }
+
+        if (!isRepeated) trackedFiles.push(newFile);
+        else {
+            console.error(chalk.red(`\nFile '${newFile}' is already tracked.\n`));
+            return;
+        }
+
+        await writeFile(trackedPath, writeTracked(trackedFiles));
+    }
+
 }
 
 export default track;
