@@ -2,25 +2,21 @@ import chalk from "chalk";
 import ArgsParser from "../argsParser";
 import nodePath from "node:path";
 import fs from "node:fs/promises";
+import os from "node:os";
 import { readTracked, writeTracked } from "./parsers";
-import { readFile, writeFile } from "../files";
+import { appendFile, readFile, writeFile } from "../files";
 
-const mapDir = async (path: string): Promise<string[]> => {
+const mapDir = async (path: string, outputSet: Set<string>) => {
     const files = await fs.readdir(path);
 
-    const output: string[] = []
-
-    for (const file of files) {
+    for (const file of files)
         try {
             const scanPath = nodePath.resolve(path, file)
             const status = await fs.stat(scanPath);
 
-            if (status.isDirectory()) output.push(...await mapDir(scanPath));
-            else if (status.isFile()) output.push(nodePath.relative(process.cwd(), scanPath));
+            if (status.isDirectory()) await mapDir(scanPath, outputSet);
+            else if (status.isFile()) outputSet.add(nodePath.relative(process.cwd(), scanPath));
         } catch { }
-    }
-
-    return output;
 }
 
 const track = async (argsParser: ArgsParser) => {
@@ -31,62 +27,48 @@ const track = async (argsParser: ArgsParser) => {
         return;
     }
 
-    const trackedPath = nodePath.resolve(process.cwd(), ".brifka/mem/tracked");
-    const path = nodePath.resolve(process.cwd(), target);
+    const trackedPath = ".brifka/mem/tracked";
+    const targetPath = nodePath.resolve(process.cwd(), target);
     let status;
     try {
-        status = await fs.stat(path);
+        status = await fs.stat(targetPath);
     } catch {
         console.error(chalk.red(`\nFile or directory '${target}' doesn't exist.\n`));
         return;
     }
 
+    const data = await readFile(trackedPath);
+
+    if (typeof data !== "string") {
+        console.error(chalk.red(`\nRepository memory corrupted :/\n`));
+        return;
+    }
+
+    const trackedFiles = new Set(readTracked(data));
+
     if (status.isDirectory()) {
-        const paths: string[] = await mapDir(path);
+        const paths = new Set<string>();
+        await mapDir(targetPath, paths);
 
-        const data = await readFile(trackedPath);
-        if (typeof data !== "string") throw new Error();
+        const newFiles = new Set(Array.from(paths).filter(p => !trackedFiles.has(p)));
 
-        const trackedFiles = readTracked(data);
-        for (const newFile of paths) {
-            let isRepeated = false;
-            for (const trackedFile of trackedFiles)
-                if (trackedFile == newFile) {
-                    isRepeated = true;
-                    break;
-                }
+        await appendFile(trackedPath, writeTracked(Array.from(newFiles)) + os.EOL)
 
-            if (!isRepeated) trackedFiles.push(newFile);
-        }
-
-        await writeFile(trackedPath, writeTracked(trackedFiles));
+        console.log(`\n${chalk.green(newFiles.size)} new files added to tracked stage from directory '${target}'.\n`);
     }
     else if (status.isFile()) {
-        const data = await readFile(trackedPath);
-        if (typeof data !== "string") {
-            console.error(chalk.red(`\nRepository memory corrupted :/\n`));
-            return;
+        const newFile = nodePath.relative(process.cwd(), targetPath)
+
+        if (!trackedFiles.has(newFile)) {
+            await appendFile(trackedPath, writeTracked([newFile]) + os.EOL);
+
+            console.log(`\nAdded '${target}' to tracked stage.\n`);
         }
-
-        const trackedFiles = readTracked(data);
-        const newFile = nodePath.relative(process.cwd(), path)
-
-        let isRepeated = false;
-        for (const trackedFile of trackedFiles)
-            if (trackedFile == newFile) {
-                isRepeated = true;
-                break;
-            }
-
-        if (!isRepeated) trackedFiles.push(newFile);
         else {
             console.error(chalk.red(`\nFile '${newFile}' is already tracked.\n`));
             return;
         }
-
-        await writeFile(trackedPath, writeTracked(trackedFiles));
     }
-
 }
 
 export default track;

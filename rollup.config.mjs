@@ -7,9 +7,7 @@ export default {
     output: {
         file: "dist/index.js",
         format: "cjs",
-        // plugins: [terser()],
-        sourcemap: "inline",
-        external: ["chalk"],
+        plugins: [terser()],
     },
     plugins: [
         nodeResolve({ exportConditions: ["node"] }),
