@@ -4,14 +4,12 @@ import { mapDirectory, readFile } from "../files";
 import { readTracked } from "./parsers";
 
 const fullLog = (tracked: Set<string>, all: Set<string>) => {
-	console.log();
-
 	// display tracked
-	console.log(chalk.green("tracked\n======="));
+	console.log(chalk.green("\ntracked\n======="));
 	for (const file of tracked) console.log(chalk.green(file));
 
 	// display not tracked
-	console.log(`\n${chalk.red("not tracked\n===========")}`);
+	console.log(chalk.red("\nnot tracked\n==========="));
 	for (const file of all) if (!tracked.has(file)) console.log(chalk.red(file));
 };
 
@@ -29,7 +27,7 @@ const log = async (argsParser: ArgsParser) => {
 	const mappedFiles = new Set<string>();
 	await mapDirectory(process.cwd(), mappedFiles);
 
-	if (full) {
+	if (full === "full") {
 		fullLog(tracked, mappedFiles);
 		return;
 	}

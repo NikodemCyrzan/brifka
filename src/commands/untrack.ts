@@ -3,7 +3,7 @@ import ArgsParser from "../argsParser";
 import nodePath from "node:path";
 import fs from "node:fs/promises";
 import { mapDirectory, readFile, writeFile } from "../files";
-import { readTracked, writeTracked } from "./parsers";
+import { readBrignore, readTracked, writeTracked } from "./parsers";
 
 const untrack = async (argsParser: ArgsParser) => {
 	const target = argsParser.next();

@@ -60,15 +60,17 @@ const createDirectory = async (path: string) => {
 		} catch {}
 };
 
-const mapDirectory = async (path: string, outputSet: Set<string>) => {
+const mapDirectory = async (path: string, outputSet: Set<string>, ignore?: Set<string>) => {
 	const files = await fs.readdir(path);
 
 	for (const file of files)
 		try {
-			const scanPath = nodePath.resolve(path, file);
-			const status = await fs.stat(scanPath);
+			const scanPath = nodePath.resolve(path, file),
+				status = await fs.stat(scanPath);
 
-			if (status.isDirectory()) await mapDirectory(scanPath, outputSet);
+			if (ignore && ignore.has(nodePath.relative(process.cwd(), scanPath))) continue;
+
+			if (status.isDirectory()) await mapDirectory(scanPath, outputSet, ignore);
 			else if (status.isFile()) outputSet.add(nodePath.relative(process.cwd(), scanPath));
 		} catch {}
 };
