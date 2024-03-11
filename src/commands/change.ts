@@ -25,7 +25,7 @@ const change = async (argsParser: ArgsParser) => {
 	const commitHash = argsParser.next();
 
 	if (!commitHash || commitHash.length <= 0) {
-		console.error(chalk.red(`\Change command requires <commit_hash> argument.\n`));
+		console.error(chalk.red(`\nChange command requires <commit_hash> argument.\n`));
 		return;
 	}
 

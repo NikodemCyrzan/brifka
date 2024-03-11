@@ -23,8 +23,8 @@ const commit = async (argsParser: ArgsParser) => {
 	}
 
 	// add commit to memory
-	const commitsPath = ".brifka/mem/commits";
-	const commitHash = crypto.randomBytes(32).toString("hex");
+	const commitsPath = ".brifka/mem/commits",
+		commitHash = crypto.randomBytes(32).toString("hex");
 
 	await appendFile(
 		commitsPath,
@@ -66,7 +66,7 @@ const commit = async (argsParser: ArgsParser) => {
 	}
 	await writeFile(`.brifka/rep/${commitHash.slice(0, 8)}`, writeTree(branches));
 
-	console.log("\nSuccessfully commited\n");
+	console.log(chalk.green("\nSuccessfully commited\n"));
 };
 
 export default commit;

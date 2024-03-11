@@ -6,6 +6,7 @@ import commit from "./commit";
 import commits from "./commits";
 import change from "./change";
 import log from "./log";
+import uncommit from "./uncommit";
 
 const interpret = {
 	help,
@@ -16,6 +17,7 @@ const interpret = {
 	commits,
 	change,
 	log,
+	uncommit,
 };
 
 export { interpret };
