@@ -22,6 +22,9 @@ const interpretCommands = (argsParser: ArgsParser) => {
         case "commit":
             interpret.commit(argsParser);
             break;
+        case "commits":
+            interpret.commits(argsParser);
+            break;
         default:
             console.error(chalk.red(`\nCommand '${command}' doesn't exist.`));
             console.log(border("To get documentation of all commands type 'brifka help' or 'brifka help <command_name>' to get documentation of specific command.", "Help"))

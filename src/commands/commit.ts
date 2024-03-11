@@ -1,6 +1,7 @@
 import chalk from "chalk";
 import ArgsParser from "../argsParser";
 import crypto from "node:crypto";
+import os from "node:os";
 import { appendFile, readFile, writeFile } from "../files";
 import { readTracked, writeCommits, writeTree } from "./parsers";
 
@@ -28,9 +29,10 @@ const commit = async (argsParser: ArgsParser) => {
     await appendFile(commitsPath, `${writeCommits([
         {
             title: commitTitle,
-            hash: commitHash
+            hash: commitHash,
+            timestamp: Date.now()
         }
-    ])}\n`);
+    ])}${os.EOL}`);
 
     // create commit tree
     const trackedPath = ".brifka/mem/tracked",
@@ -51,7 +53,7 @@ const commit = async (argsParser: ArgsParser) => {
     for (const filePath of trackedFiles) {
         const fileContent = await readFile(filePath);
         if (typeof fileContent === "boolean" && !fileContent) continue;
-        const hash = crypto.createHash("sha256").update(fileContent).digest("hex")
+        const hash = crypto.createHash("sha256").update(fileContent).digest("hex");
 
         await saveFile(filePath, hash);
 
