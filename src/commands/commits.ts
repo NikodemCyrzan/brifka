@@ -10,6 +10,11 @@ const commits = async (argsParser: ArgsParser) => {
 	if (typeof data === "boolean" && !data) return;
 	const commits = readCommits(data);
 
+	if (commits.length <= 0) {
+		console.error(chalk.red(`\nThere aren't any commits yet.\n`));
+		return;
+	}
+
 	console.log(
 		`\n${commits
 			.reverse()

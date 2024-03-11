@@ -15,10 +15,12 @@ const init = (argsParser: ArgsParser) => {
 	writeFile(
 		"brifka.config.json",
 		JSON.stringify({
-			server: "",
-			port: 21,
-			login: "",
-			password: "",
+			ftp: {
+				server: "",
+				port: 21,
+				login: "",
+				password: "",
+			},
 		})
 	);
 	writeFile(".brignore", "brifka.config.json");
