@@ -65,6 +65,8 @@ const commit = async (argsParser: ArgsParser) => {
 		});
 	}
 	await writeFile(`.brifka/rep/${commitHash.slice(0, 8)}`, writeTree(branches));
+
+	console.log("\nSuccessfully commited\n");
 };
 
 export default commit;

@@ -7,6 +7,7 @@ const y = chalk.yellow,
 
 const documentation = {
 	init: `${b("init")}` + `\n\n\tCreates new brifka repository in current working path.`,
+	log: `${b("log\nlog full")}` + `\n\n\tDisplays informations about not tracked and tracked files.` + `\n\t${y("full")} - displays more informations.`,
 	track:
 		`${b("track <directory_path> | <file_path> | .")}` +
 		`\n\n\tAdds files to the tracked stage.` +

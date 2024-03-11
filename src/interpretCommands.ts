@@ -28,6 +28,9 @@ const interpretCommands = (argsParser: ArgsParser) => {
 		case "change":
 			interpret.change(argsParser);
 			break;
+		case "log":
+			interpret.log(argsParser);
+			break;
 		default:
 			console.error(chalk.red(`\nCommand '${command}' doesn't exist.`));
 			console.log(border("To get documentation of all commands type 'brifka help' or 'brifka help <command_name>' to get documentation of specific command.", "Help"));
