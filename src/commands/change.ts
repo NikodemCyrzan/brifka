@@ -4,20 +4,31 @@ import { readFile } from "../files";
 import { readCommits, readTree } from "./parsers";
 import fs from "node:fs/promises";
 import { writeFile } from "../files";
+import nodePath from "node:path";
 
-const clearAll = async (directoryPath: string) => {
+const clearIgnore: Set<string> = new Set([".brifka", "brifka.config.json"]);
+
+const clearAll = async (directoryPath: string): Promise<number> => {
 	const files = await fs.readdir(directoryPath);
+	let filesLeftInDirectory: number = 0;
 
 	for (const p of files) {
 		const path = `${directoryPath}/${p}`;
 		const status = await fs.stat(path);
 
+		if (clearIgnore.has(nodePath.relative(process.cwd(), path))) {
+			if (status.isFile()) filesLeftInDirectory++;
+			continue;
+		}
+
 		if (status.isFile()) await fs.unlink(path);
-		else if (p != ".brifka") {
-			await clearAll(path);
-			await fs.rmdir(path);
+		else {
+			const filesLeft = await clearAll(path);
+			if (filesLeft <= 0) await fs.rmdir(path);
 		}
 	}
+
+	return filesLeftInDirectory;
 };
 
 const change = async (argsParser: ArgsParser) => {

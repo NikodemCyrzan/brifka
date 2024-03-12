@@ -11,8 +11,10 @@ const fullLog = (tracked: Set<string>, all: Set<string>) => {
 	// display not tracked
 	console.log(chalk.red("\nnot tracked\n==========="));
 	for (const file of all) if (!tracked.has(file)) console.log(chalk.red(file));
-	console.log("\n");
+	console.log();
 };
+
+const logIgnore = [".brifka", "brifka.config.json"];
 
 const log = async (argsParser: ArgsParser) => {
 	const full = argsParser.next();
@@ -30,7 +32,7 @@ const log = async (argsParser: ArgsParser) => {
 	try {
 		const brignoreRaw = await readFile(".brignore");
 		if (typeof brignoreRaw === "boolean" && !brignoreRaw) throw new Error();
-		ignore = new Set(readBrignore(brignoreRaw));
+		ignore = new Set([...readBrignore(brignoreRaw), ...logIgnore]);
 	} catch {}
 
 	// get all files

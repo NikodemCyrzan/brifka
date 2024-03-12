@@ -17,8 +17,8 @@ import border from "./border";
 	} catch {}
 
 	if (!isInited && (!command || (command != "init" && command != "help"))) {
-		console.log(chalk.red("\nBrifka repository is not initialised."));
-		console.log(border("Type 'brifka init' to initialise repository.", "Help"));
+		console.log(chalk.red("\nBrifka repository is not initialized."));
+		console.log(border("Type 'brifka init' to initialize repository.", "Help"));
 		return;
 	}
 

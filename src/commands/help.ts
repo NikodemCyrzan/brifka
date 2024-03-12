@@ -9,11 +9,10 @@ const documentation = {
 	init: `${b("init")}` + `\n\n\tCreates new brifka repository in current working path.`,
 	log: `${b("log\nlog full")}` + `\n\n\tDisplays informations about not tracked and tracked files.` + `\n\t${y("full")} - displays more informations.`,
 	track:
-		`${b("track <directory_path> | <file_path> | .")}` +
+		`${b("track <directory_path> | <file_path>")}` +
 		`\n\n\tAdds files to the tracked stage.` +
 		`\n\t${y("<directory_path>")} - all files and directories in that directory will be tracked.` +
-		`\n\t${y("<file_path>")} - file will be tracked.` +
-		`\n\t${y(".")} - all files besides excluded in '.brignore' will be tracked.`,
+		`\n\t${y("<file_path>")} - file will be tracked.`,
 	untrack:
 		`${b("untrack <directory_path> | <file_path> | .")}` +
 		`\n\n\tRemoves files from tracked stage.` +
