@@ -6,11 +6,13 @@ import os from "node:os";
 import { readBrignore, readTracked, writeTracked } from "./parsers";
 import { appendFile, mapDirectory, readFile } from "../files";
 
+const trackIgnore: string[] = [".brifka"];
+
 const track = async (argsParser: ArgsParser) => {
 	const target = argsParser.next();
 
 	if (!target || target.length <= 0) {
-		console.error(chalk.red(`\nTrack command requires <directory_path> | <file_path> | . argument.\n`));
+		console.error(chalk.red(`\nTrack command requires <directory_path> | <file_path> argument.\n`));
 		return;
 	}
 
@@ -30,8 +32,10 @@ const track = async (argsParser: ArgsParser) => {
 	try {
 		const brignoreRaw = await readFile(".brignore");
 		if (typeof brignoreRaw === "boolean" && !brignoreRaw) throw new Error();
-		ignore = new Set(readBrignore(brignoreRaw));
-	} catch {}
+		ignore = new Set([...readBrignore(brignoreRaw), ...trackIgnore]);
+	} catch {
+		ignore = new Set(trackIgnore);
+	}
 
 	// get tracked files
 	const trackedPath = ".brifka/mem/tracked";

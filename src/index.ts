@@ -6,8 +6,8 @@ import path from "node:path";
 import border from "./border";
 
 (async () => {
-	const argsParser = new ArgsParser(process.argv.slice(2));
-	const command = argsParser.peek();
+	const argsParser = new ArgsParser(process.argv.slice(2)),
+		command = argsParser.peek();
 
 	let isInited = false;
 	try {

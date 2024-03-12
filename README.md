@@ -101,7 +101,7 @@ commmits
 
 ### Uploading repository to FTP server &lt;in development&gt;
 
-Send repository to the FTP server specified in `brifka.config.json`. By default, entire repository memory will be sent along with the project, except for the configuration file, to the server. You can change that behavior in `brifka.config.json` and, for example, send only the project.
+Send repository to the FTP server specified in `brifka.config.json`. By default, entire repository memory will be sent along with the state of that commit to the server. You can change that behavior in `brifka.config.json` and, for example, send only the state of last commit.
 
 ```
 push

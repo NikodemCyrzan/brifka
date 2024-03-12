@@ -1,12 +1,13 @@
 import { readFile } from "./files";
 
-type Config = {
+export type Config = {
 	ftp: {
-		server: string;
+		host: string;
 		port: number | "default";
-		login: string;
+		user: string;
 		password: string;
-		ftps?: boolean;
+		directory: string;
+		secure?: boolean;
 	};
 };
 
