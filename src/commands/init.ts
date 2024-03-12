@@ -9,6 +9,7 @@ const init = (argsParser: ArgsParser) => {
 
 	writeFile(join("mem/commits"));
 	writeFile(join("mem/tracked"));
+	writeFile(join("mem/head"));
 
 	createDirectory(join("rep"));
 
@@ -17,7 +18,7 @@ const init = (argsParser: ArgsParser) => {
 		JSON.stringify({
 			ftp: {
 				server: "",
-				port: 21,
+				port: "default",
 				login: "",
 				password: "",
 			},

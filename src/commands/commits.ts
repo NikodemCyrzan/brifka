@@ -15,10 +15,13 @@ const commits = async (argsParser: ArgsParser) => {
 		return;
 	}
 
+	// read head
+	const head = await readFile(".brifka/mem/head");
+
 	console.log(
 		`\n${commits
 			.reverse()
-			.map(({ title, hash, timestamp }) => `${chalk.yellow("commit: " + hash)}` + `\nDate: ${new Date(timestamp).toLocaleString()}` + `\n\n\t${title}`)
+			.map(({ title, hash, timestamp }) => `${chalk.yellow("commit: " + hash)}${head && head === hash ? chalk.blue(" <- HEAD") : ""}\nDate: ${new Date(timestamp).toLocaleString()}` + `\n\n\t${title}`)
 			.join("\n\n")}\n`
 	);
 };

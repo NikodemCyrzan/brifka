@@ -3,9 +3,10 @@ import { readFile } from "./files";
 type Config = {
 	ftp: {
 		server: string;
-		port: number;
+		port: number | "default";
 		login: string;
 		password: string;
+		ftps?: boolean;
 	};
 };
 

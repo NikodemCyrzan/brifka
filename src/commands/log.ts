@@ -11,6 +11,7 @@ const fullLog = (tracked: Set<string>, all: Set<string>) => {
 	// display not tracked
 	console.log(chalk.red("\nnot tracked\n==========="));
 	for (const file of all) if (!tracked.has(file)) console.log(chalk.red(file));
+	console.log("\n");
 };
 
 const log = async (argsParser: ArgsParser) => {

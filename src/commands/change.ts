@@ -3,7 +3,6 @@ import chalk from "chalk";
 import { readFile } from "../files";
 import { readCommits, readTree } from "./parsers";
 import fs from "node:fs/promises";
-import nodePath from "node:path";
 import { writeFile } from "../files";
 
 const clearAll = async (directoryPath: string) => {
@@ -44,7 +43,7 @@ const change = async (argsParser: ArgsParser) => {
 	}
 
 	// clean working area
-	// clearAll(process.cwd());
+	clearAll(process.cwd());
 
 	// load commit state
 	const treePath = `.brifka/rep/${commit.hash.slice(0, 8)}`,
@@ -70,6 +69,9 @@ const change = async (argsParser: ArgsParser) => {
 		await writeFile(path, fileDataFromRepo);
 		loadedFiles++;
 	}
+
+	// change head
+	await writeFile(".brifka/mem/head", commitHash);
 
 	if (failedFiles.length > 0) console.error(`\n${chalk.red(failedFiles.length)} files failed to load from repository.`);
 	console.log(`\n${chalk.green(loadedFiles)} files successfully loaded from repository.\n`);

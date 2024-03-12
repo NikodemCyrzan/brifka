@@ -66,6 +66,9 @@ const commit = async (argsParser: ArgsParser) => {
 	}
 	await writeFile(`.brifka/rep/${commitHash.slice(0, 8)}`, writeTree(branches));
 
+	// change head
+	await writeFile(".brifka/mem/head", commitHash);
+
 	console.log(chalk.green("\nSuccessfully commited\n"));
 };
 

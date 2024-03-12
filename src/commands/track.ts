@@ -57,7 +57,7 @@ const track = async (argsParser: ArgsParser) => {
 
 		if (!trackedFiles.has(newFile)) {
 			await appendFile(trackedPath, writeTracked([newFile]) + os.EOL);
-			console.log(`\nAdded '${target}' to tracked stage.\n`);
+			console.log(chalk.green(`\nAdded '${target}' to tracked stage.\n`));
 		} else {
 			console.error(chalk.red(`\nFile '${newFile}' is already tracked.\n`));
 			return;
