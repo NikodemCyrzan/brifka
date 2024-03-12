@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import ArgsParser from "../argsParser";
 import { mapDirectory, readFile } from "../files";
-import { readTracked } from "./parsers";
+import { readBrignore, readTracked } from "./parsers";
 
 const fullLog = (tracked: Set<string>, all: Set<string>) => {
 	// display tracked
@@ -24,9 +24,18 @@ const log = async (argsParser: ArgsParser) => {
 	if (typeof trackedRaw === "boolean" && !trackedRaw) return;
 	const tracked = new Set(readTracked(trackedRaw));
 
+	// read brignore
+	let ignore = new Set<string>();
+
+	try {
+		const brignoreRaw = await readFile(".brignore");
+		if (typeof brignoreRaw === "boolean" && !brignoreRaw) throw new Error();
+		ignore = new Set(readBrignore(brignoreRaw));
+	} catch {}
+
 	// get all files
 	const mappedFiles = new Set<string>();
-	await mapDirectory(process.cwd(), mappedFiles);
+	await mapDirectory(process.cwd(), mappedFiles, ignore);
 
 	if (full === "full") {
 		fullLog(tracked, mappedFiles);
