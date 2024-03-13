@@ -19,6 +19,7 @@ const FTPConnect = async (): Promise<FTPConnectResult> => {
 					port: typeof port === "string" && port === "default" ? undefined : port,
 					secure,
 				});
+				await client.cd(config.ftp.directory);
 				resolve([true, client]);
 			} catch (error) {
 				client.close();

@@ -60,7 +60,6 @@ const change = async (argsParser: ArgsParser) => {
 	const [treeStatus, tree] = await readFile(REPOSITORY_FILE(commit.hash), readTree);
 	if (!treeStatus) return;
 
-
 	const failedFiles: string[] = [];
 
 	let loadedFiles = 0;
