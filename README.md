@@ -1,9 +1,3 @@
-<style>
-inv td, inv th {
-   border: none!important;
-}
-</style>
-
 # Brifka
 
 Brifka is simple version controll system that has:
