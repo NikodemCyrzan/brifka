@@ -1,29 +1,16 @@
 import { Client, FTPError } from "basic-ftp";
 import getConfig from "./config";
-import chalk from "chalk";
 
-type Result =
-	| {
-			status: "success";
-			client: Client;
-	  }
-	| {
-			status: "error";
-			text: string;
-	  };
+type FTPConnectResult = [false, string] | [true, Client];
 
-const FTPConnect = async (): Promise<Result> => {
-	const config = await getConfig();
+const FTPConnect = async (): Promise<FTPConnectResult> => {
+	const [configStatus, config] = await getConfig();
 
-	if (!config)
-		return {
-			status: "error",
-			text: chalk.red("\nCouldn't get 'brifka.config.json' file.\n"),
-		};
+	if (!configStatus) return [false, config];
 
 	const client = new Client(),
 		{ user, password, port, host, secure } = config.ftp,
-		promise = new Promise<Result>(async (resolve) => {
+		promise = new Promise<FTPConnectResult>(async (resolve) => {
 			try {
 				await client.access({
 					host,
@@ -32,16 +19,10 @@ const FTPConnect = async (): Promise<Result> => {
 					port: typeof port === "string" && port === "default" ? undefined : port,
 					secure,
 				});
-				resolve({
-					status: "success",
-					client,
-				});
+				resolve([true, client]);
 			} catch (error) {
 				client.close();
-				resolve({
-					status: "error",
-					text: `FTP error: ${(error as FTPError)?.code}`,
-				});
+				resolve([false, `FTP error: ${(error as FTPError)?.code}`]);
 			}
 		});
 

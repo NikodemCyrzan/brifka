@@ -1,22 +1,21 @@
 import ArgsParser from "../argsParser";
+import logText from "../console";
 import { readFile } from "../files";
+import { COMMITS, HEAD } from "../paths";
 import { readCommits } from "./parsers";
 import chalk from "chalk";
 
 const commits = async (argsParser: ArgsParser) => {
-	const commitsPath = ".brifka/mem/commits",
-		data = await readFile(commitsPath);
-
-	if (typeof data === "boolean" && !data) return;
-	const commits = readCommits(data);
+	const [dataStatus, commits] = await readFile(COMMITS, readCommits);
+	if (!dataStatus) return;
 
 	if (commits.length <= 0) {
-		console.error(chalk.red(`\nThere aren't any commits yet.\n`));
+		console.error(chalk.red(`\n${logText.COMMITS_EMPTY}\n`));
 		return;
 	}
 
 	// read head
-	const head = await readFile(".brifka/mem/head");
+	const [, head] = await readFile(HEAD);
 
 	console.log(
 		`\n${commits

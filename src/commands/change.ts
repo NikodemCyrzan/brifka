@@ -4,9 +4,11 @@ import { readFile } from "../files";
 import { readCommits, readTree } from "./parsers";
 import fs from "node:fs/promises";
 import { writeFile } from "../files";
-import nodePath from "node:path";
+import { relative } from "node:path";
+import logText from "../console";
+import { COMMITS, CONFIG, HEAD, REPOSITORY_FILE } from "../paths";
 
-const clearIgnore: Set<string> = new Set([".brifka", "brifka.config.json"]);
+const clearIgnore: Set<string> = new Set([".brifka", CONFIG]);
 
 const clearAll = async (directoryPath: string): Promise<number> => {
 	const files = await fs.readdir(directoryPath);
@@ -16,7 +18,7 @@ const clearAll = async (directoryPath: string): Promise<number> => {
 		const path = `${directoryPath}/${p}`;
 		const status = await fs.stat(path);
 
-		if (clearIgnore.has(nodePath.relative(process.cwd(), path))) {
+		if (clearIgnore.has(relative(process.cwd(), path))) {
 			if (status.isFile()) filesLeftInDirectory++;
 			continue;
 		}
@@ -35,21 +37,19 @@ const change = async (argsParser: ArgsParser) => {
 	const commitHash = argsParser.next();
 
 	if (!commitHash || commitHash.length <= 0) {
-		console.error(chalk.red(`\nChange command requires <commit_hash> argument.\n`));
+		console.error(chalk.red(`\n${logText.CHANGE_NO_ARGUMENT}\n`));
 		return;
 	}
 
 	// find commit
-	const commitsPath = ".brifka/mem/commits",
-		data = await readFile(commitsPath);
+	const [dataStatus, commits] = await readFile(COMMITS, readCommits);
 
-	if (typeof data === "boolean" && !data) return;
-	const commits = readCommits(data);
+	if (!dataStatus) return;
 
 	const commit = commits.filter(({ hash }) => commitHash == hash)[0];
 
 	if (!commit) {
-		console.error(`\nCommit with hash '${commitHash}' doesn't exist.\n`);
+		console.error(chalk.red(`\n${logText.COMMIT_DOES_NOT_EXIST(commitHash)}\n`));
 		return;
 	}
 
@@ -57,22 +57,18 @@ const change = async (argsParser: ArgsParser) => {
 	clearAll(process.cwd());
 
 	// load commit state
-	const treePath = `.brifka/rep/${commit.hash.slice(0, 8)}`,
-		treeRaw = await readFile(treePath);
+	const [treeStatus, tree] = await readFile(REPOSITORY_FILE(commit.hash), readTree);
+	if (!treeStatus) return;
 
-	if (typeof treeRaw === "boolean" && !treeRaw) {
-		return;
-	}
 
-	const tree = readTree(treeRaw),
-		failedFiles: string[] = [];
+	const failedFiles: string[] = [];
 
 	let loadedFiles = 0;
 
 	for (const { hash, path } of tree) {
-		const fileDataFromRepo = await readFile(`.brifka/rep/${hash.slice(0, 8)}`);
+		const [dataStatus, fileDataFromRepo] = await readFile(REPOSITORY_FILE(hash));
 
-		if (typeof fileDataFromRepo === "boolean" && !fileDataFromRepo) {
+		if (!dataStatus) {
 			failedFiles.push(path);
 			continue;
 		}
@@ -82,7 +78,7 @@ const change = async (argsParser: ArgsParser) => {
 	}
 
 	// change head
-	await writeFile(".brifka/mem/head", commitHash);
+	await writeFile(HEAD, commitHash);
 
 	if (failedFiles.length > 0) console.error(`\n${chalk.red(failedFiles.length)} files failed to load from repository.`);
 	console.log(`\n${chalk.green(loadedFiles)} files successfully loaded from repository.\n`);

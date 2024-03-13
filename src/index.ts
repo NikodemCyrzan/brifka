@@ -14,7 +14,7 @@ import border from "./border";
 		const status = await fs.stat(path.resolve(process.cwd(), ".brifka"));
 		if (!status.isDirectory()) throw new Error();
 		isInited = true;
-	} catch {}
+	} catch { }
 
 	if (!isInited && (!command || (command != "init" && command != "help"))) {
 		console.log(chalk.red("\nBrifka repository is not initialized."));

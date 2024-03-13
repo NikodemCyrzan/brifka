@@ -1,18 +1,16 @@
+import chalk from "chalk";
 import ArgsParser from "../argsParser";
 import { Config } from "../config";
 import { createDirectory, writeFile } from "../files";
-import path from "node:path";
+import logText from "../console";
+import { BRIGNORE, COMMITS, CONFIG, HEAD, REPOSITORY, TRACKED } from "../paths";
 
 const init = (argsParser: ArgsParser) => {
-	const repo = "./.brifka";
+	writeFile(COMMITS);
+	writeFile(TRACKED);
+	writeFile(HEAD);
 
-	const join = (...paths: string[]) => path.join(repo, ...paths);
-
-	writeFile(join("mem/commits"));
-	writeFile(join("mem/tracked"));
-	writeFile(join("mem/head"));
-
-	createDirectory(join("rep"));
+	createDirectory(REPOSITORY);
 
 	const defaultConfig: Config = {
 		ftp: {
@@ -24,8 +22,10 @@ const init = (argsParser: ArgsParser) => {
 		},
 	};
 
-	writeFile("brifka.config.json", JSON.stringify(defaultConfig, undefined, 2));
-	writeFile(".brignore", "brifka.config.json");
+	writeFile(CONFIG, JSON.stringify(defaultConfig, undefined, 2));
+	writeFile(BRIGNORE, CONFIG);
+
+	console.log(chalk.green(`\n${logText.INIT_SUCCESS}\n`));
 };
 
 export default init;

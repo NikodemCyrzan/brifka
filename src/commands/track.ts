@@ -5,6 +5,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import { readBrignore, readTracked, writeTracked } from "./parsers";
 import { appendFile, mapDirectory, readFile } from "../files";
+import logText from "../console";
 
 const trackIgnore: string[] = [".brifka"];
 
@@ -12,7 +13,7 @@ const track = async (argsParser: ArgsParser) => {
 	const target = argsParser.next();
 
 	if (!target || target.length <= 0) {
-		console.error(chalk.red(`\nTrack command requires <directory_path> | <file_path> argument.\n`));
+		console.error(chalk.red(`\n${logText.TRACK_NO_ARGUMENT}\n`));
 		return;
 	}
 
@@ -30,23 +31,23 @@ const track = async (argsParser: ArgsParser) => {
 	let ignore = new Set<string>();
 
 	try {
-		const brignoreRaw = await readFile(".brignore");
-		if (typeof brignoreRaw === "boolean" && !brignoreRaw) throw new Error();
-		ignore = new Set([...readBrignore(brignoreRaw), ...trackIgnore]);
+		const [brignoreStatus, brignore] = await readFile(".brignore", readBrignore);
+		if (!brignoreStatus) throw new Error();
+		ignore = new Set([...brignore, ...trackIgnore]);
 	} catch {
 		ignore = new Set(trackIgnore);
 	}
 
 	// get tracked files
 	const trackedPath = ".brifka/mem/tracked";
-	const trackedRaw = await readFile(trackedPath);
+	const [trackedStatus, tracked] = await readFile(trackedPath, readTracked);
 
-	if (typeof trackedRaw !== "string") {
-		console.error(chalk.red(`\nRepository memory corrupted :/\n`));
+	if (!trackedStatus) {
+		console.error(chalk.red(`\n${logText.TRACKED_FILE_NOT_EXISTING}\n`));
 		return;
 	}
 
-	const trackedFiles = new Set(readTracked(trackedRaw));
+	const trackedFiles = new Set(tracked);
 
 	if (status.isDirectory()) {
 		const paths = new Set<string>();
@@ -55,15 +56,15 @@ const track = async (argsParser: ArgsParser) => {
 		const newFiles = new Set(Array.from(paths).filter((p) => !trackedFiles.has(p)));
 		await appendFile(trackedPath, writeTracked(Array.from(newFiles)) + os.EOL);
 
-		console.log(`\n${chalk.green(newFiles.size)} new files added to tracked stage from directory '${target}'.\n`);
+		console.log(`\n${logText.TRACKED_PATHS_ADDED(newFiles.size, target)}\n`);
 	} else if (status.isFile()) {
 		const newFile = nodePath.relative(process.cwd(), targetPath);
 
 		if (!trackedFiles.has(newFile)) {
 			await appendFile(trackedPath, writeTracked([newFile]) + os.EOL);
-			console.log(chalk.green(`\nAdded '${target}' to tracked stage.\n`));
+			console.log(chalk.green(`\n${logText.TRACKED_PATH_ADDED(target)}\n`));
 		} else {
-			console.error(chalk.red(`\nFile '${newFile}' is already tracked.\n`));
+			console.error(chalk.red(`\n${logText.TRACKED_PATH_ALREADY_TRACKED(target)}\n`));
 			return;
 		}
 	}

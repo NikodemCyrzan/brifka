@@ -4,30 +4,42 @@ import crypto from "node:crypto";
 import os from "node:os";
 import { appendFile, readFile, writeFile } from "../files";
 import { readTracked, writeCommits, writeTree } from "./parsers";
+import logText from "../console";
+import { COMMITS, HEAD, REPOSITORY_FILE, TRACKED } from "../paths";
 
 const saveFile = async (path: string, hash: string) => {
-	const repoPath = `.brifka/rep/${hash.slice(0, 8)}`,
-		fileData = await readFile(path);
+	const [dataStatus, fileData] = await readFile(path);
+	if (!dataStatus) return;
 
-	if (typeof fileData === "boolean" && !fileData) return;
-
-	await writeFile(repoPath, fileData);
+	await writeFile(REPOSITORY_FILE(hash), fileData);
 };
 
 const commit = async (argsParser: ArgsParser) => {
 	const commitTitle = argsParser.next();
 
 	if (!commitTitle || commitTitle.length <= 0) {
-		console.error(chalk.red(`\nCommit command requires <commit_name> argument.\n`));
+		console.error(chalk.red(`\n${logText.COMMIT_NO_ARGUMENT}\n`));
 		return;
 	}
 
+	// create commit tree
+	const [trackedStatus, trackedFiles] = await readFile(TRACKED, readTracked);
+
+	if (!trackedStatus || trackedFiles.length <= 0) {
+		console.error(chalk.red(`\n${logText.TRACKED_EMPTY}\n`));
+		return;
+	} else if (!trackedStatus) {
+		console.error(chalk.red(`\n${logText.TRACKED_FILE_NOT_EXISTING}\n`));
+		return;
+	}
+
+	const branches = [];
+
 	// add commit to memory
-	const commitsPath = ".brifka/mem/commits",
-		commitHash = crypto.randomBytes(32).toString("hex");
+	const commitHash = crypto.randomBytes(32).toString("hex");
 
 	await appendFile(
-		commitsPath,
+		COMMITS,
 		`${writeCommits([
 			{
 				title: commitTitle,
@@ -37,24 +49,9 @@ const commit = async (argsParser: ArgsParser) => {
 		])}${os.EOL}`
 	);
 
-	// create commit tree
-	const trackedPath = ".brifka/mem/tracked",
-		trackedData = await readFile(trackedPath);
-
-	if (typeof trackedData === "string" && trackedData.length <= 0) {
-		console.error(chalk.red(`\nThere aren't any files in tracked stage.\n`));
-		return;
-	} else if (typeof trackedData === "boolean" && !trackedData) {
-		console.error(chalk.red(`\nRepository memory corrupted :/\n`));
-		return;
-	}
-
-	const trackedFiles = readTracked(trackedData);
-	const branches = [];
-
 	for (const filePath of trackedFiles) {
-		const fileContent = await readFile(filePath);
-		if (typeof fileContent === "boolean" && !fileContent) continue;
+		const [fileStatus, fileContent] = await readFile(filePath);
+		if (!fileStatus) continue;
 		const hash = crypto.createHash("sha256").update(fileContent).digest("hex");
 
 		await saveFile(filePath, hash);
@@ -64,12 +61,12 @@ const commit = async (argsParser: ArgsParser) => {
 			hash,
 		});
 	}
-	await writeFile(`.brifka/rep/${commitHash.slice(0, 8)}`, writeTree(branches));
+	await writeFile(REPOSITORY_FILE(commitHash), writeTree(branches));
 
 	// change head
-	await writeFile(".brifka/mem/head", commitHash);
+	await writeFile(HEAD, commitHash);
 
-	console.log(chalk.green("\nSuccessfully commited\n"));
+	console.log(chalk.green(`\n${logText.COMMIT_SUCCESS}\n`));
 };
 
 export default commit;

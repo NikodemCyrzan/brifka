@@ -3,6 +3,7 @@ import ArgsParser from "../argsParser";
 import getConfig from "../config";
 import { FTPConnect } from "../ftp";
 import nodePath from "node:path";
+import logText from "../console";
 
 const list = async (argsParser: ArgsParser) => {
 	let directory = argsParser.next();
@@ -10,26 +11,25 @@ const list = async (argsParser: ArgsParser) => {
 	if (directory === false) directory = ".";
 
 	// get config
-	const config = await getConfig();
+	const [configStatus, config] = await getConfig();
 
-	if (!config) {
-		console.error(chalk.red(`\nCouldn't load config file.\n`));
+	if (!configStatus) {
+		console.error(chalk.red(`\n${config}\n`));
 		return;
 	}
 	const { directory: remoteDir } = config.ftp;
 
 	// connect to FTP server
-	const result = await FTPConnect();
+	const [ftpStatus, ftp] = await FTPConnect();
 
-	if (result.status === "error") {
-		console.error(chalk.red(`\n${result.text}\n`));
+	if (!ftpStatus) {
+		console.error(chalk.red(`\n${ftp}\n`));
 		return;
 	}
-	const { client } = result;
 
 	// list files
 	try {
-		const files = await client.list(nodePath.join(remoteDir, directory).replace("\\", "/"));
+		const files = await ftp.list(nodePath.join(remoteDir, directory).replace("\\", "/"));
 
 		console.log();
 		for (const fileInfo of files) {
@@ -41,32 +41,32 @@ const list = async (argsParser: ArgsParser) => {
 		console.log(error, "err");
 	}
 
-	client.close();
+	ftp.close();
 };
 
 const push = async () => {
 	const config = await getConfig();
 
 	if (!config) {
-		console.error(chalk.red(`\nCouldn't load config file.\n`));
+		console.error(chalk.red(`\n${logText.CONFIG_NOT_EXISTING}\n`));
 		return;
 	}
 };
 
 const pull = async () => {
-	const config = await getConfig();
+	const [configStatus, config] = await getConfig();
 
-	if (!config) {
-		console.error(chalk.red(`\nCouldn't load config file.\n`));
+	if (!configStatus) {
+		console.error(chalk.red(`\n${config}\n`));
 		return;
 	}
 
 	const { directory } = config.ftp;
 
-	const result = await FTPConnect();
+	const [ftpStatus, ftp] = await FTPConnect();
 
-	if (result.status === "error") {
-		console.error(chalk.red(`\n${result.text}\n`));
+	if (!ftpStatus) {
+		console.error(chalk.red(`\n${ftp}\n`));
 		return;
 	}
 };

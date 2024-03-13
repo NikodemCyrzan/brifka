@@ -40,8 +40,7 @@ const readTree = (data: string): TreeBranch[] => {
 			});
 		});
 	} catch {
-		console.error(chalk.red("\nRepository memory corrupted :/\n"));
-		return [];
+		throw new Error("Could't parse tree.");
 	}
 
 	return branches;

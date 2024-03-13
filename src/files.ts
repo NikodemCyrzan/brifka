@@ -1,5 +1,5 @@
 import fs from "node:fs/promises";
-import nodePath from "node:path";
+import nodePath, { parse } from "node:path";
 
 type Flags = "r" | "r+" | "rs+" | "w" | "wx" | "w+" | "wx+" | "a" | "ax" | "a+" | "ax+";
 
@@ -21,7 +21,7 @@ const writeFile = async (path: string, data: string = "") => {
 	for (let i = 0; i < split.length; i++)
 		try {
 			await fs.mkdir(nodePath.resolve(process.cwd(), ...split.slice(0, i + 1)));
-		} catch {}
+		} catch { }
 
 	await fs.writeFile(path, data);
 };
@@ -35,17 +35,24 @@ const appendFile = async (path: string, data: string) => {
 	for (let i = 0; i < split.length; i++)
 		try {
 			await fs.mkdir(nodePath.resolve(process.cwd(), ...split.slice(0, i + 1)));
-		} catch {}
+		} catch { }
 
 	await fs.appendFile(path, data);
 };
 
-const readFile = async (path: string): Promise<string | false> => {
+type ReadFileResult<T> = [true, T] | [false];
+
+async function readFile<T>(path: string, parser: (data: string) => T): Promise<ReadFileResult<T>>;
+async function readFile(path: string): Promise<ReadFileResult<string>>;
+async function readFile(path: any, parser?: (data: string) => any) {
 	path = nodePath.resolve(process.cwd(), path);
 	try {
-		return await fs.readFile(path, { encoding: "utf8" });
+		if (parser)
+			return [true, parser(await fs.readFile(path, { encoding: "utf8" }))];
+		else
+			return [true, await fs.readFile(path, { encoding: "utf8" })];
 	} catch {
-		return false;
+		return [false];
 	}
 };
 
@@ -57,7 +64,7 @@ const createDirectory = async (path: string) => {
 	for (let i = 0; i < split.length; i++)
 		try {
 			await fs.mkdir(nodePath.resolve(process.cwd(), ...split.slice(0, i + 1)));
-		} catch {}
+		} catch { }
 };
 
 const mapDirectory = async (path: string, outputSet: Set<string>, ignore?: Set<string>) => {
@@ -72,7 +79,7 @@ const mapDirectory = async (path: string, outputSet: Set<string>, ignore?: Set<s
 
 			if (status.isDirectory()) await mapDirectory(scanPath, outputSet, ignore);
 			else if (status.isFile()) outputSet.add(nodePath.relative(process.cwd(), scanPath));
-		} catch {}
+		} catch { }
 };
 
 export { openFile, writeFile, appendFile, readFile, createDirectory, mapDirectory };

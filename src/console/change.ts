@@ -1,0 +1,1 @@
+export const CHANGE_NO_ARGUMENT = "Change command requires <commit_hash> argument.";

@@ -57,8 +57,7 @@ const readCommits = (data: string): Commit[] => {
 			});
 		});
 	} catch {
-		console.error(chalk.red("\nRepository memory corrupted :/\n"));
-		return [];
+		throw new Error("Couldn't parse commits.");
 	}
 
 	return commits;

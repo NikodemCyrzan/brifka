@@ -1,4 +1,6 @@
+import logText from "./console";
 import { readFile } from "./files";
+import { CONFIG } from "./paths";
 
 export type Config = {
 	ftp: {
@@ -11,37 +13,51 @@ export type Config = {
 	};
 };
 
-type ConfigCallback = (config: Config | null) => void;
+type GetConfigResult = [true, Config] | [false, string];
+
+type ConfigCallback = (config: GetConfigResult) => void;
 
 const configListeners: ConfigCallback[] = [];
 
-let willConfigBeLoaded = true;
+let willConfigBeLoaded = true,
+	wasError: boolean = false,
+	errorText: string = "";
 
 // loading config file
-let loadedConfig: Config | null = null;
+let loadedConfig: Config;
 const callAllListeners = () => {
-	configListeners.forEach((callback) => callback(loadedConfig));
+	let res: GetConfigResult;
+	if (wasError) res = [false, errorText];
+	else res = [true, loadedConfig];
+	configListeners.forEach((callback) => callback(res));
 };
 
 (async () => {
-	const config = await readFile("brifka.config.json");
+	const [configStatus, config] = await readFile(CONFIG);
 
-	if (typeof config === "boolean" && !config) {
+	if (!configStatus) {
 		willConfigBeLoaded = false;
+		wasError = true;
+		errorText = logText.CONFIG_NOT_EXISTING;
 		callAllListeners();
 		return;
 	}
 
 	try {
 		loadedConfig = JSON.parse(config);
-	} catch {}
+	} catch {
+		wasError = true;
+		errorText = logText.CONFIG_FORMAT_ERROR;
+	}
 	willConfigBeLoaded = false;
 	callAllListeners();
 })();
 
-const getConfig = async (): Promise<Config | null> => {
-	if (!willConfigBeLoaded) return loadedConfig;
-
+const getConfig = async (): Promise<GetConfigResult> => {
+	if (!willConfigBeLoaded) {
+		if (wasError) return [false, errorText];
+		else return [true, loadedConfig]
+	}
 	return new Promise((resolve) => configListeners.push(resolve));
 };
 
