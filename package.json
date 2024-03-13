@@ -1,6 +1,6 @@
 {
 	"name": "@brifka/main",
-	"version": "0.0.10",
+	"version": "0.0.11",
 	"description": "Version control system for simple web development",
 	"main": "dist/index.js",
 	"bin": {
