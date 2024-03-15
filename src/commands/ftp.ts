@@ -3,11 +3,15 @@ import ArgsParser from "../argsParser";
 import { FTPConnect } from "../ftp";
 import nodePath from "node:path/posix";
 import logText from "../console";
-import { pipeline } from "stream/promises";
-import { createReadStream } from "node:fs";
 import { COMMITS, REPOSITORY_FILE } from "../paths";
-import { readCommits, readTree } from "./parsers";
+import { readCommits, readTree, writeEnvVariables } from "./parsers";
 import { readFile } from "../files";
+import { Readable, Transform, pipeline } from "node:stream";
+import { createReadStream, createWriteStream } from "node:fs";
+import { join, normalize, parse, sep } from "path/win32";
+// @ts-ignore
+import ProgressBar from "progress";
+import getConfig from "../config";
 
 const list = async (argsParser: ArgsParser) => {
 	let directory = argsParser.next();
@@ -40,6 +44,10 @@ const list = async (argsParser: ArgsParser) => {
 };
 
 const push = async () => {
+	const [configStatus, config] = await getConfig();
+
+	if (!configStatus) return;
+
 	// connect to FTP server
 	const [ftpStatus, ftp] = await FTPConnect();
 
@@ -65,14 +73,70 @@ const push = async () => {
 	// clear remote directory
 	await ftp.clearWorkingDir();
 
+	const bar = new ProgressBar("[:bar]", {
+		total: tree.length,
+		complete: chalk.bgWhiteBright("#"),
+		incomplete: chalk.bgGray("."),
+		width: 17,
+	});
+
 	// send tree to
+	for (const { hash, path } of tree) {
+		const buffer: [string, string] = ["", ""],
+			readable = new Readable({ encoding: "utf8" })
+		// @ts-ignore
+		readable._read = () => { }
+
+		// stream file to remote
+		let i = 0;
+		createReadStream(nodePath.resolve(path))
+			.on("data", (data) => {
+				if (i !== 0) {
+					buffer[0] = buffer[1];
+					buffer[1] = data.toString("utf8");
+
+					const [full, end] = writeEnvVariables(buffer.join(""));
+					if (end !== 0)
+						readable.push(full.slice(0, end), "utf8");
+					buffer[1] = full.slice(end);
+				}
+				else
+					buffer[1] = data.toString("utf8");
+				i++;
+			})
+			.on("end", () => {
+				readable.push(i <= 1 ? writeEnvVariables(buffer[1])[0] : buffer[1], "utf8")
+				readable.push(null);
+			});
+
+
+		let dir: string;
+		try {
+			const norm = normalize(path),
+				parsed = parse(norm);
+			await ftp.ensureDir(parsed.dir);
+			await ftp.uploadFrom(readable, parsed.base);
+
+			dir = await ftp.pwd();
+		} catch {
+			dir = await ftp.pwd();
+		}
+
+		let len = parse(dir).dir.split("/").length;
+		while (len--) await ftp.cdup();
+		await ftp.cd(normalize(config.ftp.directory))
+		bar.tick()
+	}
+	ftp.close();
+
+	console.log(chalk.green("\nSuccessfully pushed repository build.\n"))
 };
 
 const ftp = (argsParser: ArgsParser) => {
 	const command = argsParser.next();
 
 	if (!command || command.length <= 0) {
-		console.error(chalk.red(`\nFtp command requires pull | push | list argument.\n`));
+		console.error(chalk.red(`\nFtp command requires push | list argument.\n`));
 		return;
 	}
 
@@ -84,7 +148,7 @@ const ftp = (argsParser: ArgsParser) => {
 			list(argsParser);
 			break;
 		default:
-			console.error(chalk.red(`\n'${command}' is not valid argument. Expected pull | push | list argument.\n`));
+			console.error(chalk.red(`\n'${command}' is not valid argument.Expected push | list argument.\n`));
 			break;
 	}
 };

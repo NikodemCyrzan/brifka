@@ -1,7 +1,24 @@
+import { createReadStream, createWriteStream } from "node:fs";
 import fs from "node:fs/promises";
 import nodePath, { parse } from "node:path";
+import { pipeline } from "node:stream/promises";
 
 type Flags = "r" | "r+" | "rs+" | "w" | "wx" | "w+" | "wx+" | "a" | "ax" | "a+" | "ax+";
+
+const copyFile = async (from: string, to: string, createDir: boolean = false) => {
+	// check if to directory exists
+	if (createDir) {
+		const split = nodePath.parse(nodePath.normalize(to)).dir.split(nodePath.sep).filter(d => d.length > 0);
+
+		for (let i = 0; i < split.length; i++)
+			try {
+				await fs.mkdir(nodePath.resolve(...split.slice(0, i + 1)));
+			} catch { }
+	}
+
+	// copy
+	return pipeline(createReadStream(nodePath.resolve(from)), createWriteStream(nodePath.resolve(to)));
+}
 
 const openFile = async (path: string, flags: Flags): Promise<fs.FileHandle | false> => {
 	path = nodePath.resolve(process.cwd(), path);

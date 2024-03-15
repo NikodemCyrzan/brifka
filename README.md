@@ -3,7 +3,7 @@
 Brifka is simple version controll system that has:
 
 -   **commiting** - taking snapshots of the current project state and saving it on the timeline,
--   **FTP client** _`<under development>`_ - ability to connect to FTP server and download/upload files.
+-   **FTP client** - ability to connect to FTP server and upload built project.
 -   **Docker intergration** _`<under development>`_ - ability to run docker compose in order to test your services locally.
 
 ## Installation
@@ -106,7 +106,7 @@ brifka ftp list [ | <ftp_directory>]
 
 Lists all files and directories from `<ftp_directory>`, or when not provided, from root directory specified in `brifka.config.json`.
 
-### `ftp push` _`<under development>`_
+### `ftp push`
 
 ```
 brifka ftp push
@@ -114,16 +114,6 @@ brifka ftp push
 
 #### Description
 
-Send repository to the FTP server specified in `brifka.config.json`. By default, entire repository memory will be sent along with the state of that commit to the server. You can change that behavior in `brifka.config.json` and, for example, send only the state of last commit.
-
-### `ftp pull` _`<under development>`_
-
-```
-brifka ftp pull
-```
-
-#### Description
-
-Download repository from FTP server specified in `brifka.config.json`.
+Builds project based on last commit and sends it to the FTP server specified in `brifka.config.json`.
 
 ### Docker _`under development`_
