@@ -7,7 +7,8 @@
 		"brifka": "bin/cli.js"
 	},
 	"scripts": {
-		"watch": "rollup -c --watch"
+		"watch": "rollup -c --watch",
+		"preinstall": "npx only-allow pnpm"
 	},
 	"author": "Nikodem Cyrzan",
 	"license": "MIT",
@@ -33,5 +34,8 @@
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/NikodemCyrzan/brifka.git"
+	},
+	"dependencies": {
+		"@brifka/main": "file:"
 	}
 }
